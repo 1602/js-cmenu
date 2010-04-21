@@ -1,0 +1,274 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- :mode=html:collapseFolds=1:indentSize=4:tabSize=4:folding=explicit: -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>Context menu</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<script language='javascript' src='jquery-1.3.2.js'></script>
+	<script language='javascript' src='1602.cmenu.js'></script>
+<style>
+/* page style */
+body{
+	font-family: tahoma, verdana;
+	font-size: 80%;
+}
+
+/* cmenu ubuntu styles*/
+.cmenu {
+	display:none;
+	position:absolute;
+	cursor: default;
+	background: #302f2c;
+	border: 1px solid #222220;
+	z-index:100;
+}
+
+.cmenu img{
+	vertical-align:middle;
+}
+.cmenuItem{
+	white-space: nowrap;
+	font-size:11px;
+	color: #c2c2b7;
+	height: 20px;
+	margin-top: -1px;
+	margin-left: -1px;
+	border: 1px solid transparent;
+}
+.cmenuItem .cmenuIcon {
+	width: 16px;
+	height: 16px;
+	margin: 0;
+	padding: 2px;
+	float: left;
+}
+
+.cmenuItem .cmenuTitle {
+	float: left;
+	padding: 2px;
+	height: 16px;
+}
+
+.cmenuItem .submenuBullet {
+	width: 16px;
+	height: 16px;
+	padding: 2px;
+	float: right;
+	clear: right;
+}
+
+.cmenuItem .hasSubmenu {
+	background: url(images/submenu_bullet.png) no-repeat 50% 50%;
+}
+
+.cmenuItem:hover{
+	background: url(images/menuitem_hover.png) repeat-x;
+	color: #fff;
+	border-color: #5c4842;
+}
+
+.cmenuItemWithSub{
+	background: #336;
+	color: #fff;
+}
+
+.cmenu hr{
+	width: 100%;
+	height: 1px;
+	border-width: 0;
+	background: #3a3a3a;
+	padding-left: 3px;
+	padding-right: 3px;
+}
+
+/* sample */
+#code,#lt,#rt,#lb,#rb{position: absolute;z-index:1;}
+#lt,#lb{left:10px;}
+#rt,#rb{right:10px;}
+#rb,#lb{bottom:10px;}
+#rt,#lt{top:10px;}
+#code{top:30px;left:0;right:0;bottom:0;z-index:0;margin-left:200px;}
+pre{font-size:12px;}
+/* code highlight */
+.str{color:red;}
+.func{color:blue;}
+.comm{color:orange;}
+.kwrd{font-weight:bold;}
+.str span{color:red;font-weight:normal;}
+.comm span{color:orange;font-weight:normal;}
+</style>
+<script>
+/*global jQuery, $, MenuItem, asdasdasd*/
+(function ($) {
+	$.fn.syntax = function () {
+		return this.each(function () {
+			var jqCode = $(this);
+			var code = jqCode.text();
+			code = code
+				.replace(/(var|function|typeof|new|return|if|for|in|while|break|do|continue)([^a-z0-9\$_])/gi, '<span class="kwrd">$1<\/span>$2')
+				.replace(/(\{|\}|\]|\[|\|)/gi, '<span class="kwrd">$1<\/span>')
+				.replace(/(\/\/[^\n\r]*(\n|\r\n))/g, '<span class="comm">$1<\/span>')
+				.replace(/('.*?')/g, '<span class="str">$1<\/span>')
+				.replace(/([a-z\_\$][a-z0-9_]*)\(/gi, '<span class="func">$1<\/span>(')
+				.replace(/\t/g, '    ');
+			jqCode.html(code);
+		});
+	};
+})(jQuery);
+
+$(document).ready(function () {
+	var def_act = function (x, parent) {
+		alert(x.caption);
+	};
+	/* var asda = [
+		new MenuItem('Назад',	'arrow_left', function () {history.back();}),
+		new MenuItem('!Вперед',	'arrow_right', function () {history.forward();}),
+		new MenuItem('Обновить','arrow_refresh', function () {location.href=location.href;})
+	]; */
+	/* var asda = [
+		['Назад',	'arrow_left', function () {history.back();}],
+		['!Вперед',	'arrow_right', function () {history.forward();}],
+		['Обновить','arrow_refresh', function () {location.href=location.href;}]
+	]; */
+	var asda = [
+		['Back',	'arrow_left', function () {
+			history.back();
+		}],
+		['Forward',	'arrow_right', function () {
+			history.forward();
+		}],
+		['Reload page', 'arrow_refresh', function () {
+			location.href = location.href;
+		}],
+		'-',
+		['Restore closed tab', 'tab', def_act],
+		['Add page to bookmarks', 'folder_heart', def_act],
+		['Save as...', 'disk', def_act],
+		['Send link', 'link', def_act],
+		'-',
+		['!Open background image', 'image', def_act],// ! — disabled=true
+		['Select all', 'shading', def_act],
+		['Copy', 'page_white_copy', def_act],
+		['Paste', 'page_white_paste', def_act],
+		'-',
+		['Inspect element', 'bug'],
+		['Select encoding', '', false, function (z) {
+			z.a = [];
+			var x = 'utf-8,utf8-y,utf-16,utf-16le,utf-16be,koi8-r,koi8-u,windows-1251'.split(',');
+			for (var i in x) {
+				z.a.push(new MenuItem(x[i]));
+			}
+			z.type = 'radio';
+			z.set = function (i) {
+				asdasdasd = i;
+			};
+			z.get = function () {
+				return typeof asdasdasd === 'string'?asdasdasd:'koi8-r';
+			};
+			return true;
+		}]
+	];
+	
+	var table_common = function (item) {
+		//console.log(item);return;
+		//location.href = '/db/' + parent.p[parent.p.length-1].cmenu_item.caption + '/' + x.caption;
+		location.href = '/db/' + item.parent.caption + '/' + item.caption;
+	}
+	
+	var table_menu = $.cmenu.get_menu([
+		['data', 'table', function (mi) {
+				location.href = '/db/' + mi.parent.parent.caption + '/' +
+				mi.parent.caption + '/data';
+			}
+		],
+		['!indexes'],['!triggers'],['!constraints']
+	]);
+	
+	$('.firefoxmenu').bindMenu(asda);
+	cb = function (menu) {
+		menu.async = true;
+		if (menu.a) {
+			return menu.a;
+		}
+		$.getJSON('/db.json', function (r) {
+			menu.a = [];
+			for (var i in r.databases) {
+				menu.a.push([r.databases[i], 'database', def_act, cb2]);
+			}
+			menu.done();
+		});
+	};
+	
+	cb2 = function (menu) {
+		menu.async = true;
+		if (menu.a) {
+			return menu.a;
+		}
+		var table = menu.parent_item.caption;
+		$.getJSON('/db/' + table + '.json', function (r) {
+			menu.a = [];
+			for (var i in r.tables) {
+				menu.a.push([r.tables[i], 'database_table', table_common, table_menu]);
+			}
+			menu.done();
+		});
+	};
+	
+	//$('.firefoxmenu').bindMenu(cb);
+	
+	// my simple syntax hl
+	$('#code pre').syntax();
+});
+</script>
+</head>
+<body>
+
+<span id="lt" class="firefoxmenu">Click for FF3 menu</span>
+<span id="rt" class="firefoxmenu">Click for FF3 menu</span>
+<span id="lb" class="firefoxmenu">Click for FF3 menu</span>
+<span id="rb" class="firefoxmenu">Click for FF3 menu</span>
+<div id="code"><pre>var asda = [
+	['Back',	'arrow_left', function () {
+		history.back();
+	}],
+	['Forward',	'arrow_right', function () {
+		history.forward();
+	}],
+	['Reload page', 'arrow_refresh', function () {
+		location.href = location.href;
+	}],
+	'-',
+	['Restore closed tab', 'tab', def_act],
+	['Add page to bookmarks', 'folder_heart', def_act],
+	['Save as...', 'disk', def_act],
+	['Send link', 'link', def_act],
+	'-',
+	['!Open background image', 'image', def_act],// ! — disabled=true
+	['Select all', 'shading', def_act],
+	['Copy', 'page_white_copy', def_act],
+	['Paste', 'page_white_paste', def_act],
+	'-',
+	['Inspect element', 'bug'],
+	['Select encoding', '', false, function (z) {
+		z.a = [];
+		var x = 'utf-8,utf8-y,utf-16,utf-16le,utf-16be,koi8-r,koi8-u,windows-1251'.split(',');
+		for (var i in x) {
+			z.a.push(new MenuItem(x[i]));
+		}
+		z.type = 'radio';
+		z.set = function (i) {
+			asdasdasd = i;
+		};
+		z.get = function () {
+			return typeof asdasdasd === 'string'?asdasdasd:'koi8-r';
+		};
+		return true;
+	}]
+];
+
+$('.firefoxmenu').bindMenu(asda);
+</pre>
+</div>
+<a href="1602.cmenu.js" style="position:absolute;left:200px;">Скачать библиотеку 1602.cmenu.js</a>
+</body>
+</html>
