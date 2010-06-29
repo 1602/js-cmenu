@@ -5,18 +5,18 @@
 /*global cm_img, globals, MenuItem, jQuery*/
 
 (function ($) {
-	
+
 	var window = this,
 	undefined,
 	cls_item_with_submenu = 'cmenuItemWithSub',
 	cls_item = 'cmenuItem';
-	
+
 	if (!$.isFunction(window.cm_img)) {
 		window.cm_img = function (img, alt, style, nodefsize) {/* {{{ */
 			if (alt) {
 				alt = alt.replace(/"/, '\"');
 			}
-			return '<img src="images/' + img + 
+			return '<img src="/images/icons/' + img + 
 				(img.search(/\.(gif|jpg|jpeg)$/i) === -1?'.png':'') +
 				'" ' + (nodefsize ? '' : 'width="16" height="16"')
 				+ ' alt="' +
@@ -32,7 +32,7 @@
 			activeModule: window
 		};
 	}
-	
+
 	/**
 	 * create object MenuItem
 	 *
@@ -52,7 +52,7 @@
 		this.execute = execute;
 		this.submenu = submenu;
 	};
-	
+
 	function create_cmenu_object(actions) {
 		var new_cmenu_id = $.cmenu.c.length,
 		cmenu_object = {
@@ -62,13 +62,13 @@
 			r: false
 		};
 		cmenu_object[$.isFunction(actions)?'f':'a'] = actions;
-		
+
 		$('body').append(cmenu_object.jq);
-		
+
 		$.cmenu.c[new_cmenu_id] = cmenu_object;
 		return cmenu_object;
 	}
-	
+
 	function get_path(el) {		/* Menu calling stack	{{{ */
 		var p = [], jel;
 		while (el) {
@@ -80,14 +80,14 @@
 			el.cmenu = $.cmenu.get_menu(parseInt(jel.parent().attr('iuid'), 10));
 			el.cmenu_item = el.cmenu.a[jel.attr('item_id')];
 			p.push(el);
-			
+
 			// Go to parent
 			el = el.cmenu.caller;
 		}
 		return p.reverse();
 		/* }}} */
 	}
-	
+
 	function get_offset(el, stop) {/* Offset el against stop	{{{ */
 		//console.log(el.tagName,el.offsetLeft,el.offsetTop);
 		if (el.offsetParent && el.offsetParent !== stop) {
@@ -103,7 +103,7 @@
 		}
 		/* }}} */
 	}
-	
+
 	function hide_all() {			/* Hide all displayed menus	{{{ */
 		// Если блокировано сокрытие меню - выйти
 		if ($.cmenu.lockHiding) {
@@ -119,7 +119,7 @@
 		}
 		/* }}} */
 	}
-	
+
 	function get_caller(id, event) {/* Compile menu-caller-string (inline script attributes)	{{{ */
 		var m = false;
 		if (typeof id === 'object') {
@@ -138,19 +138,19 @@
 			return 'onmouseover="var t=this;$.cmenu.to=setTimeout(function(){$.cmenu.show(' + id + ',t);$.cmenu.lockHiding=true;},200);" onmouseout="clearTimeout($.cmenu.to);$.cmenu.lockHiding=false;"';
 				// (m?'m=$.cmenu.get_menu('+id+');m&&m.sub&&$.cmenu.hide_menu(m.sub);':'')
 		}
-		
+
 		/* }}} */
 	}
-	
+
 	function handle_userfunc(menu) {
 		if (!$.isFunction(menu.f)) {
 			return true;
 		}
-		
+
 		if (typeof menu.caller !== 'object') {
 			return false;
 		}
-		
+
 		// result of user function should be object or boolean
 		var userfunc_result = menu.f(menu);
 		if (typeof userfunc_result === 'object') {
@@ -159,10 +159,10 @@
 		} else {
 			menu.r = !userfunc_result;
 		}
-		
+
 		return true;
 	}
-	
+
 	function handle_async(menu) {
 		if (!menu.async) {
 			return true;
@@ -177,7 +177,7 @@
 		menu.r = false;
 		return true;
 	}
-	
+
 	function handle_rendered(menu) {
 		if (menu.r) {
 			return false;
@@ -185,48 +185,48 @@
 		menu.r = true;
 		return true;
 	}
-	
+
 	function is_invisible(item) {
 		return item.visible !== undefined && !item.visible ||
 			item.acid !== undefined && $.inArray(item.acid, globals.accessedActions || []);
 	}
-	
+
 	function render_item(menu, i, radio) { /* {{{ */
 		var a = menu.a[i];
 		if (a === '-') {                        
 			return '<hr' + ($.browser.msie?' style="width:50px;align:center;"':'') + '/>';
 			//return h += '<div class="hr"></div>';
 		}
-		
+
 		if (a.constructor === Array) {
 			a = new MenuItem(a[0], a[1], a[2], a[3]);
 			menu.a[i] = a;
 		}
-		
+
 		menu.a[i].parent = menu.parent_item;
-		
+
 		if (is_invisible(a)) {
 			return '';
 		}
-		
+
 		if (a.submenu && (!a.submenu.cn || a.submenu.cn !== 'cmenu')) {
 			a.submenu = $.cmenu.get_menu(a.submenu);
 		}
-		
+
 		var caption = a.caption;
 		if (radio && caption === radio) { // radio
 			caption = '<strong><u>' + a.caption + '</u></strong>';
 		} else { // other
-			
+
 		}
-		
+
 		return '<div class="cmenuItem" item_id="' + i + '" ' +
 			(a.disabled? 
 				// Недоступный элемент
 				'style="color:#808080;" ':
 				// Доступный элемент
 				'onclick="$.cmenu.exec(this);" ' +
-				
+
 				//'onclick="$.cmenu.exec(' + x.id + ',\'' + i + '\');" ' +
 				(a.submenu?
 				// Есть подменю
@@ -241,12 +241,12 @@
 		'</div></div>';
 		/* }}} */
 	}
-	
+
 	function render_menu(menu) {			/* Render menu items	{{{ */
 		if (!handle_userfunc(menu) || !handle_async(menu) || !handle_rendered(menu)) {
 			return false;
 		}
-		
+
 		if (menu.type === 'radio') {
 			var radio = menu.get();
 		} else {
@@ -261,14 +261,14 @@
 		menu.jq.html(h);
 		/* }}} */
 	}
-	
+
 	$.cmenu = {
 		c: [],
 		exec: function (item_element) {		/* Execute action	{{{ */
 			item_element = $(item_element);
 			var act = item_element.attr('item_id');
 			var id = item_element.parent().attr('iuid');
-			
+
 			var m = $.cmenu.c[id];
 			if (!m) {
 				alert('Menu not found');
@@ -285,6 +285,7 @@
 			}
 			if ($.isFunction(m.a[act].execute) && !m.a[act].disabled) {
 				m.a[act].execute.apply(globals.activeModule, [m.a[act], m, m.p]);
+				hide_all();
 			}
 			/* }}} */
 		},
@@ -310,9 +311,12 @@
 			m.jq.hide();
 			/* }}} */
 		},
-		show: function (menu, parentNode) {			/* Show menu near parentNode	{{{ */
+		show: function (menu, parentNode, position) {			/* Show menu near parentNode	{{{ */
 			if (typeof menu !== 'object') {
 				menu = this.get_menu(menu);
+			}
+			if (typeof position === 'undefined') {
+				position = 'left';
 			}
 			// return if menu already displayed near element parentNode
 			if (menu.v && menu.caller === parentNode) {
@@ -351,25 +355,25 @@
 					menu.parentMenu = pm;
 				}
 			}
-			
+
 			menu.p = get_path(parentNode);
 			menu.parent_item = menu.p[menu.p.length - 1].cmenu_item;
 			render_menu(menu);
-			
+
 			if (menu.jq[0].offsetParent !== menu.p[0].offsetParent) {
 				menu.jq.appendTo(menu.p[0].offsetParent);
 			}
-			
+
 			// Display menu
 			if (menu.jq.css('display') === 'none') {
 				menu.jq.show();
 			}
-			
+
 			// Calculate menu parameters
 			var cmenuOffParent = menu.jq[0].offsetParent;
 			var cmenuWidth = menu.jq[0].offsetWidth;
 			var cmenuHeight = menu.jq[0].offsetHeight;
-			
+
 			// Calc visible screen bounds (this code is common)
 			var w = 0, h = 0;
 			if (typeof(window.innerWidth) === 'number') {// не msie
@@ -392,62 +396,70 @@
 			}
 			var winHeight = h + sy;
 			var winWidth = w + sx;
-			
+
 			// Получаем абсолютное смещение элемента, вызвавшего меню (p)
 			// относительно cmenuOffParent
 			var off = get_offset(parentNode, cmenuOffParent);
-			
-			// Очень важный момент - в какую сторону показывать меню (по горизонтали)
-			// Задача - если есть место чтобы показать справа от объекта
-			//	- показываем справа: left = off.x+p.offsetWidth
-			// если места справа нет
-			// - показываем слева: left = off.x-cmenuWidth
-			// Наличие места вычисляем исходя из
-			// - размеров блока меню (cmenuWidth)
-			// - смещению (off.x) родительского элемента относительно общего offsetParent-а (cmenuOffParent)
-			// - ширине экрана (winWidth)
-			menu.jq.css('left',
-				cmenuOffParent.offsetLeft + off.x + parentNode.offsetWidth + cmenuWidth > winWidth ?
-				off.x - cmenuWidth : off.x + parentNode.offsetWidth);
-			// Еще один очень важный момент - в какую сторону показывать меню (по вертикали)
-			// Задача - если есть место чтобы показать снизу от объекта
-			//	- показываем снизу: top = off.y-2
-			// если места снизу нет 
-			// - показываем сверху: top = off.y-cmenuHeight+p.offsetHeight+4
-			// Наличие места вычисляем исходя из
-			// - размеров блока меню (cmenuHeight)
-			// - смещению (off.y) родительского элемента относительно общего offsetParent-а (cmenuOffParent)
-			// - высоте экрана (winHeight)
-			menu.jq.css('top',
-				cmenuOffParent.offsetTop + off.y + cmenuHeight > winHeight ?
-				off.y - cmenuHeight + parentNode.offsetHeight + 2 : off.y + 1);
+			if (position == 'left') {
+				// Очень важный момент - в какую сторону показывать меню (по горизонтали)
+				// Задача - если есть место чтобы показать справа от объекта
+				//	- показываем справа: left = off.x+p.offsetWidth
+				// если места справа нет
+				// - показываем слева: left = off.x-cmenuWidth
+				// Наличие места вычисляем исходя из
+				// - размеров блока меню (cmenuWidth)
+				// - смещению (off.x) родительского элемента относительно общего offsetParent-а (cmenuOffParent)
+				// - ширине экрана (winWidth)
+				menu.jq.css('left',
+					cmenuOffParent.offsetLeft + off.x + parentNode.offsetWidth + cmenuWidth > winWidth ?
+					off.x - cmenuWidth : off.x + parentNode.offsetWidth);
+				// Еще один очень важный момент - в какую сторону показывать меню (по вертикали)
+				// Задача - если есть место чтобы показать снизу от объекта
+				//	- показываем снизу: top = off.y-2
+				// если места снизу нет 
+				// - показываем сверху: top = off.y-cmenuHeight+p.offsetHeight+4
+				// Наличие места вычисляем исходя из
+				// - размеров блока меню (cmenuHeight)
+				// - смещению (off.y) родительского элемента относительно общего offsetParent-а (cmenuOffParent)
+				// - высоте экрана (winHeight)
+				menu.jq.css('top',
+					cmenuOffParent.offsetTop + off.y + cmenuHeight > winHeight ?
+					off.y - cmenuHeight + parentNode.offsetHeight + 2 : off.y + 1);
+			} else {
+				menu.jq.css('left', off.x);
+				menu.jq.css('top', off.y + 1 + parentNode.offsetHeight);
+			}
 			// Устанавливаем флаг видимости меню
 			menu.v = true;
 			/* }}} */
 		}
 	};
-	
-	$.fn.bindMenu = function (event, menu) {/* jQuery-plugin for menu binding	{{{ */
+
+	$.fn.bindMenu = function (event, menu, position) {/* jQuery-plugin for menu binding	{{{ */
 		if (arguments.length === 1) {
 			menu = event;
-			event = 'click';
+			event = 'mousedown';
 		}
 		if (!menu.jq) {
 			menu = $.cmenu.get_menu(menu);
 		}
 		return this.each(function () {
 			$(this).bind(event, function () {
+				hide_all();
 				$.cmenu.lockHiding = true;
-				$.cmenu.show(menu, this);
+				$.cmenu.show(menu, this, position);
+				return false;
 			})
 			.bind('mouseout', function () {
 				$.cmenu.lockHiding = false;
-			});
+			})
+			.bind('click', function () {return false;});
 		});
 		/* }}} */
 	};
-	
-	
 
+	$(document).click(function () {
+	   hide_all();
+	});
 })(jQuery);
 /* :folding=explicit:*/
