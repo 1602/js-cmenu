@@ -2,36 +2,27 @@
  * Author: A.Chakkaev [1602] http://1602.habrahabr.ru/
  * Created: summer 2008
 **/
-/*global cm_img, globals, MenuItem, jQuery*/
+/*global MenuItem, jQuery*/
 
-(function ($) {
+(function ($, window) {
 
-    var window = this,
-    undefined,
-    cls_item_with_submenu = 'cmenuItemWithSub',
-    cls_item = 'cmenuItem';
+    var undefined,
+        ICONS_PATH = '/images/icons/',
+        cls_item_with_submenu = 'cmenuItemWithSub',
+        cls_item = 'cmenuItem';
 
-    if (!$.isFunction(window.cm_img)) {
-        window.cm_img = function (img, alt, style, nodefsize) {/* {{{ */
-            if (alt) {
-                alt = alt.replace(/"/, '\"');
-            }
-            return '<img src="/images/icons/' + img + 
-                (img.search(/\.(gif|jpg|jpeg)$/i) === -1?'.png':'') +
-                '" ' + (nodefsize ? '' : 'width="16" height="16"')
-                + ' alt="' +
-                (alt?alt:'img') + '" ' +
-                (alt?'title="' + alt + '"':'') +
-                (style?' style="' + style + '"':'') + ' />';
-        /* }}} */
-        };
-    }
-
-    if (window.globals === undefined) {
-        window.globals = {
-            activeModule: window
-        };
-    }
+    function image(img, alt, style, nodefsize) {
+        if (alt) {
+            alt = alt.replace(/"/, '\"');
+        }
+        return '<img src="' + ICONS_PATH + img + 
+            (img.search(/\.(gif|jpg|jpeg)$/i) === -1?'.png':'') +
+            '" ' + (nodefsize ? '' : 'width="16" height="16"')
+            + ' alt="' +
+            (alt?alt:'img') + '" ' +
+            (alt?'title="' + alt + '"':'') +
+            (style?' style="' + style + '"':'') + ' />';
+    };
 
     /**
      * create object MenuItem
@@ -188,7 +179,7 @@
 
     function is_invisible(item) {
         return item.visible !== undefined && !item.visible ||
-            item.acid !== undefined && $.inArray(item.acid, globals.accessedActions || []);
+            item.acid !== undefined && $.inArray(item.acid, []);
     }
 
     function render_item(menu, i, radio) { /* {{{ */
@@ -235,7 +226,7 @@
                 ' onmouseover="$.cmenu.to=setTimeout(function(){var m = $.cmenu.get_menu(' + menu.id + ');m && m.sub && $.cmenu.hide_menu(m.sub);},300);" onmouseout="clearTimeout($.cmenu.to);" ')
             ) +
         '><div class="cmenuIcon">' +
-        (a.icon ? cm_img(a.icon, ' ') : '') +
+        (a.icon ? image(a.icon, ' ') : '') +
         '</div><div class="cmenuTitle"> ' + caption +
         '</div><div class="submenuBullet ' + (a.submenu ? 'hasSubmenu' : '') + '">' +
         '</div></div>';
@@ -284,7 +275,7 @@
                 return false;
             }
             if ($.isFunction(m.a[act].execute) && !m.a[act].disabled) {
-                m.a[act].execute.apply(globals.activeModule, [m.a[act], m, m.p]);
+                m.a[act].execute.apply(window, [m.a[act], m, m.p]);
                 hide_all();
             }
             /* }}} */
@@ -461,5 +452,4 @@
     $(document).click(function () {
        hide_all();
     });
-})(jQuery);
-/* :folding=explicit:*/
+})(jQuery, this);
